@@ -1,4 +1,4 @@
-name: Build ScanWakeAlarm APK
+name: Build ScanWakeAlarm v2 APK
 
 on:
   push:
@@ -12,16 +12,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Auto-Fix Folder Structure
+      - name: Auto-Fix v2 Folder Structure
         run: |
           mkdir -p app/src/main/java/com/scanwake/alarm
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/drawable
 
           mv -f MainActivity.kt AlarmActivity.kt AlarmReceiver.kt AlarmService.kt app/src/main/java/com/scanwake/alarm/ 2>/dev/null || true
           mv -f AndroidManifest.xml app/src/main/ 2>/dev/null || true
-          mv -f activity_main.xml activity_alarm.xml app/src/main/res/layout/ 2>/dev/null || true
+          mv -f activity_main.xml activity_alarm.xml spinner_item.xml app/src/main/res/layout/ 2>/dev/null || true
           mv -f strings.xml themes.xml app/src/main/res/values/ 2>/dev/null || true
+          mv -f bg_scanner_box.xml bg_spinner_dark.xml app/src/main/res/drawable/ 2>/dev/null || true
           mv -f proguard-rules.pro app/ 2>/dev/null || true
 
           cat << 'EOF' > build.gradle.kts
@@ -43,8 +45,8 @@ jobs:
                   applicationId = "com.scanwake.alarm"
                   minSdk = 26
                   targetSdk = 34
-                  versionCode = 1
-                  versionName = "1.0"
+                  versionCode = 2
+                  versionName = "2.0"
               }
               buildTypes {
                   release {
@@ -90,5 +92,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ScanWakeAlarm-APK
+          name: ScanWakeAlarm-v2-APK
           path: app/build/outputs/apk/debug/app-debug.apk
+          
