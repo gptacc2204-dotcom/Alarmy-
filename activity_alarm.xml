@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
@@ -9,49 +10,80 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Center Scanner Viewfinder -->
+    <View
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_scanner_box" />
+
+    <!-- Top HUD -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
-        android:background="#CC0F1115"
+        android:background="#CC0B0E14"
         android:gravity="center"
         android:orientation="vertical"
         android:padding="20dp">
 
         <TextView
+            android:id="@+id/tvClockNow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="06:30"
+            android:textColor="#FFFFFF"
+            android:textSize="36sp"
+            android:textStyle="bold" />
+
+        <TextView
             android:id="@+id/tvTargetTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="SCAN: SINK"
             android:textColor="#FF5252"
-            android:textSize="26sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Volume is locked. Point camera at target to stop alarm."
-            android:textColor="#E8EAED"
+            android:text="Volume locked at 100%. Point camera at target."
+            android:textColor="#C4C9D4"
             android:textSize="13sp" />
     </LinearLayout>
 
+    <!-- Bottom HUD + Flashlight Button -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="#CC0F1115"
+        android:background="#CC0B0E14"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="18dp">
+        android:padding="20dp">
 
         <TextView
             android:id="@+id/tvDetected"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Scanning..."
             android:textColor="#FFD54F"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTorch"
+            android:layout_width="wrap_content"
+            android:layout_height="46dp"
+            android:layout_marginTop="12dp"
+            android:text="Flashlight: OFF"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            app:backgroundTint="#2A3244"
+            app:cornerRadius="22dp" />
     </LinearLayout>
 </FrameLayout>

@@ -11,10 +11,14 @@ import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
 
 class AlarmService : Service() {
@@ -27,6 +31,7 @@ class AlarmService : Service() {
     }
 
     private var mediaPlayer: MediaPlayer? = null
+    private var vibrator: Vibrator? = null
     private lateinit var audioManager: AudioManager
     private val handler = Handler(Looper.getMainLooper())
     private var currentTarget = "Sink"
@@ -35,14 +40,12 @@ class AlarmService : Service() {
         override fun run() {
             if (!isAlarmRunning) return
 
-            // 1. Force Alarm Volume to 100% (Anti-Volume-Down)
             val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
             val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_ALARM)
             if (currentVol < maxVol) {
                 audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVol, 0)
             }
 
-            // 2. Keep AlarmActivity on top if user tries to escape via Home/Recents
             if (!AlarmActivity.isVisible) {
                 launchAlarmScreen()
             }
@@ -54,6 +57,13 @@ class AlarmService : Service() {
     override fun onCreate() {
         super.onCreate()
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        vibrator = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val vm = getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vm.defaultVibrator
+        } else {
+            @Suppress("DEPRECATION")
+            getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
         createNotificationChannel()
     }
 
@@ -64,10 +74,13 @@ class AlarmService : Service() {
         }
 
         currentTarget = intent?.getStringExtra("TARGET_OBJECT") ?: "Sink"
-        isAlarmRunning = true
+        val ringtoneUriStr = intent?.getStringExtra("RINGTONE_URI")
+        val vibrateEnabled = intent?.getBooleanExtra("VIBRATE", true) ?: true
 
+        isAlarmRunning = true
         startForeground(1, buildNotification())
-        startLoudAlarmSound()
+        startLoudAlarmSound(ringtoneUriStr)
+        if (vibrateEnabled) startVibration()
         launchAlarmScreen()
 
         handler.removeCallbacks(lockdownRunnable)
@@ -76,13 +89,17 @@ class AlarmService : Service() {
         return START_STICKY
     }
 
-    private fun startLoudAlarmSound() {
+    private fun startLoudAlarmSound(ringtoneUriStr: String?) {
         try {
             val maxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_ALARM)
             audioManager.setStreamVolume(AudioManager.STREAM_ALARM, maxVol, 0)
 
-            val alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            val alarmUri: Uri = if (!ringtoneUriStr.isNullOrEmpty()) {
+                Uri.parse(ringtoneUriStr)
+            } else {
+                RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                    ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            }
 
             mediaPlayer?.release()
             mediaPlayer = MediaPlayer().apply {
@@ -97,6 +114,15 @@ class AlarmService : Service() {
                 prepare()
                 start()
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun startVibration() {
+        try {
+            val pattern = longArrayOf(0, 700, 400)
+            vibrator?.vibrate(VibrationEffect.createWaveform(pattern, 0))
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -124,7 +150,7 @@ class AlarmService : Service() {
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
             .setContentTitle("ScanWake Alarm Active!")
-            .setContentText("Scan '$currentTarget' to turn off alarm")
+            .setContentText("Scan '$currentTarget' to stop alarm")
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setOngoing(true)
@@ -153,6 +179,12 @@ class AlarmService : Service() {
         mediaPlayer?.stop()
         mediaPlayer?.release()
         mediaPlayer = null
+        vibrator?.cancel()
+
+        getSharedPreferences("scanwake_prefs", Context.MODE_PRIVATE).edit()
+            .putBoolean("alarm_active", false)
+            .apply()
+
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -161,6 +193,7 @@ class AlarmService : Service() {
         super.onDestroy()
         handler.removeCallbacks(lockdownRunnable)
         mediaPlayer?.release()
+        vibrator?.cancel()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

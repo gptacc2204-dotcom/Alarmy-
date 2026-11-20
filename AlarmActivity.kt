@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.OptIn
 import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
@@ -18,9 +19,13 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.label.ImageLabeling
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -31,10 +36,29 @@ class AlarmActivity : AppCompatActivity() {
         var isVisible = false
     }
 
+    private val synonymMap = mapOf(
+        "sink" to listOf("sink", "washbasin", "plumbing", "faucet", "tap", "bathroom", "basin"),
+        "bottle" to listOf("bottle", "water bottle", "drinkware", "plastic"),
+        "cup" to listOf("cup", "mug", "coffee", "tea", "drinkware", "glass"),
+        "chair" to listOf("chair", "seat", "furniture", "stool", "couch"),
+        "shoe" to listOf("shoe", "footwear", "sneaker", "boot", "sandal"),
+        "door" to listOf("door", "doorway", "wood", "handle", "wall"),
+        "desk" to listOf("desk", "table", "furniture", "wood"),
+        "computer" to listOf("computer", "laptop", "keyboard", "monitor", "screen", "electronics"),
+        "book" to listOf("book", "notebook", "paper", "publication", "text"),
+        "plant" to listOf("plant", "flower", "leaf", "houseplant", "tree"),
+        "toothbrush" to listOf("toothbrush", "brush", "bathroom", "dental"),
+        "refrigerator" to listOf("refrigerator", "fridge", "appliance", "kitchen")
+    )
+
     private lateinit var previewView: PreviewView
+    private lateinit var tvClockNow: TextView
     private lateinit var tvTargetTitle: TextView
     private lateinit var tvDetected: TextView
+    private lateinit var btnTorch: MaterialButton
     private lateinit var cameraExecutor: ExecutorService
+    private var camera: Camera? = null
+    private var isTorchOn = false
     private var targetObject: String = "Sink"
     private var isStopped = false
     private var emergencyTapCount = 0
@@ -42,7 +66,6 @@ class AlarmActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Show over lock screen & keep screen awake
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -58,12 +81,26 @@ class AlarmActivity : AppCompatActivity() {
 
         targetObject = intent.getStringExtra("TARGET_OBJECT") ?: "Sink"
         previewView = findViewById(R.id.previewView)
+        tvClockNow = findViewById(R.id.tvClockNow)
         tvTargetTitle = findViewById(R.id.tvTargetTitle)
         tvDetected = findViewById(R.id.tvDetected)
+        btnTorch = findViewById(R.id.btnTorch)
 
+        tvClockNow.text = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date())
         tvTargetTitle.text = "SCAN: ${targetObject.uppercase()}"
 
-        // Hidden Emergency Exit: Tap title 25 times in case of total darkness
+        btnTorch.setOnClickListener {
+            val cam = camera
+            if (cam != null && cam.cameraInfo.hasFlashUnit()) {
+                isTorchOn = !isTorchOn
+                cam.cameraControl.enableTorch(isTorchOn)
+                btnTorch.text = if (isTorchOn) "Flashlight: ON" else "Flashlight: OFF"
+            } else {
+                Toast.makeText(this, "Flashlight not available", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Hidden Emergency Exit: Tap title 25 times
         tvTargetTitle.setOnClickListener {
             emergencyTapCount++
             if (emergencyTapCount >= 25) {
@@ -72,7 +109,6 @@ class AlarmActivity : AppCompatActivity() {
             }
         }
 
-        // Block Back Button completely
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 Toast.makeText(this@AlarmActivity, "Scan $targetObject to stop!", Toast.LENGTH_SHORT).show()
@@ -93,7 +129,6 @@ class AlarmActivity : AppCompatActivity() {
         isVisible = false
     }
 
-    // Block Volume Up / Down hardware keys
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             return true
@@ -111,7 +146,7 @@ class AlarmActivity : AppCompatActivity() {
 
             val labeler = ImageLabeling.getClient(
                 ImageLabelerOptions.Builder()
-                    .setConfidenceThreshold(0.65f)
+                    .setConfidenceThreshold(0.60f)
                     .build()
             )
 
@@ -126,7 +161,7 @@ class AlarmActivity : AppCompatActivity() {
 
             try {
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
+                camera = cameraProvider.bindToLifecycle(
                     this,
                     CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
@@ -150,16 +185,17 @@ class AlarmActivity : AppCompatActivity() {
                 .addOnSuccessListener { labels ->
                     if (isStopped) return@addOnSuccessListener
 
-                    val topLabels = labels.take(3).joinToString(" | ") {
+                    val topLabels = labels.take(3).joinToString(" • ") {
                         "${it.text} (${(it.confidence * 100).toInt()}%)"
                     }
                     runOnUiThread {
                         tvDetected.text = if (topLabels.isEmpty()) "Scanning..." else topLabels
                     }
 
-                    val matched = labels.any {
-                        it.text.equals(targetObject, ignoreCase = true) ||
-                        it.text.contains(targetObject, ignoreCase = true)
+                    val validKeywords = synonymMap[targetObject.lowercase()] ?: listOf(targetObject.lowercase())
+                    val matched = labels.any { label ->
+                        val text = label.text.lowercase()
+                        validKeywords.any { kw -> text == kw || text.contains(kw) }
                     }
                     if (matched) {
                         stopAlarmAndFinish()
@@ -176,6 +212,9 @@ class AlarmActivity : AppCompatActivity() {
     private fun stopAlarmAndFinish() {
         if (isStopped) return
         isStopped = true
+        if (isTorchOn) {
+            camera?.cameraControl?.enableTorch(false)
+        }
         val stopIntent = Intent(this, AlarmService::class.java).apply {
             action = AlarmService.ACTION_STOP_ALARM
         }

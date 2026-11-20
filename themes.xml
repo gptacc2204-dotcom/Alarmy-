@@ -1,10 +1,13 @@
 <resources>
-    <style name="Theme.ScanWakeAlarm" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.ScanWakeAlarm" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">#FF5252</item>
         <item name="colorPrimaryVariant">#D32F2F</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="android:statusBarColor">#0F1115</item>
-        <item name="android:navigationBarColor">#0F1115</item>
-        <item name="android:windowBackground">#0F1115</item>
+        <item name="colorSecondary">#4CAF50</item>
+        <item name="android:statusBarColor">#0B0E14</item>
+        <item name="android:navigationBarColor">#0B0E14</item>
+        <item name="android:windowBackground">#0B0E14</item>
+        <item name="android:textColorPrimary">#FFFFFF</item>
+        <item name="android:textColorSecondary">#9AA0A6</item>
     </style>
 </resources>

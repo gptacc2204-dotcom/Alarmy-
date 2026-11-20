@@ -1,97 +1,290 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0F1115"
+    android:background="#0B0E14"
     android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ScanWake Alarm"
-            android:textColor="#FFFFFF"
-            android:textSize="28sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="No Snooze. Volume Locked. Scan Object to Stop."
-            android:textColor="#9AA0A6"
-            android:textSize="14sp" />
-
-        <TimePicker
-            android:id="@+id/timePicker"
+        <!-- Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:timePickerMode="spinner"
-            android:theme="@android:style/Theme.Holo.Dialog.NoActionBar" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ScanWake Alarm"
+                    android:textColor="#FFFFFF"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="Strict Object-Scan Anti-Cheat Alarm"
+                    android:textColor="#8A94A6"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#222836"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="OFF"
+                android:textColor="#9AA0A6"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Active Alarm & Live Countdown Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardActiveAlarm"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Select Target Object to Scan"
-            android:textColor="#E8EAED"
-            android:textSize="15sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="#171C26"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="#FF5252"
+            app:strokeWidth="1dp">
 
-        <Spinner
-            android:id="@+id/objectSpinner"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvActiveTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alarm Set: 06:30 | Target: Sink"
+                    android:textColor="#E8EAED"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCountdown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:text="Rings in 05h 20m 15s"
+                    android:textColor="#FF6E6E"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancelAlarm"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:layout_marginTop="12dp"
+                    android:text="Stop / Cancel Scheduled Alarm"
+                    android:textAllCaps="false"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#2D3548"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Time Picker Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="8dp"
-            android:background="#1E222B"
-            android:padding="12dp" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardBackgroundColor="#151922"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="#242B3A"
+            app:strokeWidth="1dp">
 
-        <Button
-            android:id="@+id/btnPermissions"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:text="SET ALARM TIME"
+                    android:textColor="#8A94A6"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <TimePicker
+                    android:id="@+id/timePicker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:theme="@android:style/Theme.Holo.Dialog.NoActionBar"
+                    android:timePickerMode="spinner" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Configuration Card -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="20dp"
-            android:backgroundTint="#2C3240"
-            android:text="1. Grant Required Permissions"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:cardBackgroundColor="#151922"
+            app:cardCornerRadius="16dp"
+            app:strokeColor="#242B3A"
+            app:strokeWidth="1dp">
 
-        <Button
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="TARGET OBJECT TO SCAN"
+                    android:textColor="#8A94A6"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/objectSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_spinner_dark"
+                    android:popupBackground="#222836" />
+
+                <!-- Alarm Sound Row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ALARM SOUND"
+                            android:textColor="#8A94A6"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSoundName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="Default Alarm Sound"
+                            android:textColor="#FFFFFF"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPickSound"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:text="Choose"
+                        android:textAllCaps="false"
+                        android:textColor="#FFFFFF"
+                        app:backgroundTint="#2A3244"
+                        app:cornerRadius="10dp" />
+                </LinearLayout>
+
+                <!-- Vibration Toggle -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Vibrate with Alarm"
+                        android:textColor="#E8EAED"
+                        android:textSize="15sp" />
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchVibrate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Primary Actions -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSetAlarm"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="#FF5252"
-            android:text="2. Set Strict Alarm"
+            android:layout_marginTop="18dp"
+            android:text="Set Strict Alarm"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:backgroundTint="#FF5252"
+            app:cornerRadius="14dp" />
 
-        <Button
-            android:id="@+id/btnTestAlarm"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
-            android:backgroundTint="#1E222B"
-            android:text="Test Alarm Right Now"
-            android:textAllCaps="false"
-            android:textColor="#9AA0A6" />
-
-        <TextView
-            android:id="@+id/tvStatus"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center"
-            android:text="No alarm active"
-            android:textColor="#81C784"
-            android:textSize="14sp" />
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTestAlarm"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:text="Test Now"
+                android:textAllCaps="false"
+                android:textColor="#E8EAED"
+                app:backgroundTint="#1E2432"
+                app:cornerRadius="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPermissions"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:text="Permissions"
+                android:textAllCaps="false"
+                android:textColor="#E8EAED"
+                app:backgroundTint="#1E2432"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
